@@ -1,6 +1,28 @@
 # Custom Browser for Galaxy Tab
 
+![Build Status](https://github.com/Spica910/custombrowser/workflows/Build%20Android%20APK/badge.svg)
+
 Android WebView 기반 커스텀 브라우저로, AI 서비스와 로컬 웹앱에 최적화되어 있습니다.
+
+## 📥 APK 다운로드
+
+### GitHub Actions로 자동 빌드된 APK 받기
+
+**방법 1: Actions Artifacts (가장 쉬움)**
+1. GitHub 저장소 → [Actions 탭](../../actions)
+2. 최신 성공한 워크플로우 클릭
+3. 아래 **Artifacts** 섹션에서 `app-debug` 다운로드
+4. ZIP 압축 해제 → `app-debug.apk` 획득
+
+**방법 2: Releases (안정 버전)**
+1. GitHub 저장소 → [Releases](../../releases)
+2. 최신 릴리즈 선택
+3. Assets에서 APK 다운로드
+
+**방법 3: 직접 빌드**
+- 상세 가이드: [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
+
+---
 
 ## 주요 기능
 
