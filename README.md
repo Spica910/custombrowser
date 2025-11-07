@@ -11,11 +11,13 @@ Android WebView 기반 커스텀 브라우저로, AI 서비스와 로컬 웹앱�
 - **갤럭시 탭 최적화**: 태블릿 화면에 최적화된 UI/UX
 
 ### 🚀 추가 기능
+- **다운로드 관리자**: 파일 다운로드 및 시스템 다운로드 폴더 접근
 - Desktop 모드 전환
 - 완전한 WebView 브라우저 기능 (뒤로/앞으로 가기)
 - 진행 상태 표시
 - URL 검색창 (Google 검색 통합)
 - 북마크 관리 (추가/삭제)
+- 다운로드 알림 (완료 시 알림 표시)
 
 ## 프로젝트 구조
 
@@ -110,6 +112,11 @@ custombrowser/
 - 메뉴(⋮) > Desktop Mode 선택
 - PC 버전 웹사이트 렌더링
 
+### 다운로드
+- 웹페이지에서 파일 다운로드 시 자동으로 Android DownloadManager 사용
+- 메뉴(⋮) > Downloads에서 다운로드 폴더 열기
+- 다운로드 완료 시 알림으로 확인
+
 ## 설정 커스터마이징
 
 ### Quick Access URL 변경
@@ -147,6 +154,8 @@ custombrowser/
 ### 필요한 권한
 - `INTERNET`: 웹 페이지 로딩
 - `ACCESS_NETWORK_STATE`: 네트워크 상태 확인
+- `POST_NOTIFICATIONS`: 다운로드 완료 알림 (Android 13+)
+- `WRITE_EXTERNAL_STORAGE`: 다운로드 파일 저장 (Android 9 이하)
 
 ### 보안 기능
 - Mixed Content 지원 (HTTPS/HTTP)
@@ -157,11 +166,32 @@ custombrowser/
 
 - [ ] 탭 브라우징 지원
 - [ ] 히스토리 기능
-- [ ] 다운로드 관리자
+- [x] 다운로드 관리자 ✅
 - [ ] 다크 모드 테마
 - [ ] 북마크 폴더/카테고리
-- [ ] 확장 기능 지원 (제한적)
+- [ ] 크롬 익스텐션 지원 (Kiwi Browser 통합)
 - [ ] 동기화 기능 (클라우드)
+
+## 크롬 익스텐션 지원에 대하여
+
+현재 버전은 **Android WebView 기반**으로 네이티브 크롬 익스텐션을 지원하지 않습니다.
+
+크롬 익스텐션 지원을 원하신다면 다음 옵션들을 고려할 수 있습니다:
+
+### 옵션 A: Kiwi Browser 소스 포크
+- Kiwi Browser는 Chromium 기반으로 **네이티브 크롬 익스텐션** 지원
+- Chrome Web Store에서 직접 익스텐션 설치 가능
+- 단점: Chromium 빌드 복잡도 높음, 빌드 시간 매우 길음 (수 시간)
+
+### 옵션 B: 하이브리드 접근 (추천)
+- 현재 WebView 브라우저 + Kiwi WebView 통합
+- 필요시 Kiwi 브라우저로 페이지 열기 기능
+- 경량 유지하면서 익스텐션 필요시에만 사용
+
+### 옵션 C: UserScript 인젝션
+- JavaScript 인젝션으로 유사 기능 구현
+- Tampermonkey/Greasemonkey 스타일
+- 제한적이지만 가벼운 솔루션
 
 ## 라이선스
 

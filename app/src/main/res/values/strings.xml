@@ -26,4 +26,10 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
+
+    <!-- Download -->
+    <string name="download_started">Download started</string>
+    <string name="download_failed">Download failed</string>
+    <string name="menu_downloads">Downloads</string>
+    <string name="notification_permission_required">Notification permission required for download alerts</string>
 </resources>

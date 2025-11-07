@@ -1,18 +1,24 @@
 package com.custombrowser
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.DialogInterface
+import android.app.DownloadManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.webkit.*
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.custombrowser.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +27,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bookmarkManager: BookmarkManager
     private var isDesktopMode = false
 
+    // Permission launcher for notifications (API 33+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(this, R.string.notification_permission_required, Toast.LENGTH_LONG).show()
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         bookmarkManager = BookmarkManager(this)
+
+        // Request notification permission for API 33+
+        requestNotificationPermission()
 
         setupWebView()
         setupToolbar()
@@ -39,6 +57,18 @@ class MainActivity : AppCompatActivity() {
         } ?: run {
             // Load default page
             loadUrl("https://www.google.com")
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -103,6 +133,11 @@ class MainActivity : AppCompatActivity() {
 
             // Enable console logging for debugging
             setWebContentsDebuggingEnabled(true)
+
+            // Setup download listener
+            setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                downloadFile(url, userAgent, contentDisposition, mimetype)
+            }
         }
     }
 
@@ -226,9 +261,39 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun downloadFile(url: String, userAgent: String, contentDisposition: String, mimetype: String) {
+        try {
+            val request = DownloadManager.Request(Uri.parse(url)).apply {
+                setMimeType(mimetype)
+                addRequestHeader("User-Agent", userAgent)
+                setDescription("Downloading file...")
+                setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype))
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,
+                    URLUtil.guessFileName(url, contentDisposition, mimetype))
+            }
+
+            val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            downloadManager.enqueue(request)
+            Toast.makeText(this, R.string.download_started, Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun openDownloads() {
+        try {
+            startActivity(android.content.Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Downloads app not found", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showMenu() {
         val options = arrayOf(
             getString(R.string.menu_bookmarks),
+            getString(R.string.menu_downloads),
             getString(R.string.menu_refresh),
             getString(R.string.menu_desktop_mode) + " (${if (isDesktopMode) "ON" else "OFF"})",
             getString(R.string.menu_settings)
@@ -239,9 +304,10 @@ class MainActivity : AppCompatActivity() {
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> showBookmarks()
-                    1 -> binding.webView.reload()
-                    2 -> toggleDesktopMode()
-                    3 -> showSettings()
+                    1 -> openDownloads()
+                    2 -> binding.webView.reload()
+                    3 -> toggleDesktopMode()
+                    4 -> showSettings()
                 }
             }
             .show()
