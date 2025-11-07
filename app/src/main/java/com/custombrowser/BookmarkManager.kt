@@ -50,12 +50,13 @@ class BookmarkManager(context: Context) {
     fun getQuickAccessUrls(): Map<String, String> {
         val json = prefs.getString(KEY_QUICK_ACCESS, null)
         if (json == null) {
-            // Default URLs
+            // Default URLs - Updated for OAuth login
             val defaults = mapOf(
-                "claude" to "https://claude.ai/code",
-                "gemini" to "https://gemini.google.com",
-                "codex" to "https://platform.openai.com/playground",
-                "localhost" to "http://localhost:3000"
+                "claude" to "https://claude.ai/new",
+                "gemini" to "https://gemini.google.com/app",
+                "chatgpt" to "https://chatgpt.com",  // Changed from codex
+                "localhost" to "http://localhost:3000",
+                "github" to "https://github.com"
             )
             setQuickAccessUrls(defaults)
             return defaults

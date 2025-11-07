@@ -5,7 +5,9 @@ Android WebView 기반 커스텀 브라우저로, AI 서비스와 로컬 웹앱�
 ## 주요 기능
 
 ### ✨ 핵심 기능
-- **AI 서비스 빠른 접근**: Claude Code, Gemini, Codex CLI 원터치 접속
+- **AI 서비스 빠른 접근**: Claude, Gemini, ChatGPT 원터치 접속
+- **OAuth 자동 로그인**: WebView 쿠키/세션 영구 저장으로 로그인 상태 유지
+- **GitHub 통합**: 코드 보관 및 다양한 AI 모델에서 접근
 - **북마크 시스템**: 자주 방문하는 페이지 저장 및 관리
 - **로컬 웹앱 지원**: localhost 포트 설정으로 로컬 개발 서버 접근
 - **갤럭시 탭 최적화**: 태블릿 화면에 최적화된 UI/UX
@@ -13,6 +15,7 @@ Android WebView 기반 커스텀 브라우저로, AI 서비스와 로컬 웹앱�
 ### 🚀 추가 기능
 - **Kiwi Browser 통합**: 크롬 익스텐션 필요시 원터치로 Kiwi Browser 실행
 - **다운로드 관리자**: 파일 다운로드 및 시스템 다운로드 폴더 접근
+- **영구 세션 저장**: OpenAI, GitHub, Google 로그인 자동 유지
 - Desktop 모드 전환
 - 완전한 WebView 브라우저 기능 (뒤로/앞으로 가기)
 - 진행 상태 표시
@@ -91,12 +94,18 @@ custombrowser/
 
 ## 사용 방법
 
-### AI 서비스 접근
+### AI 서비스 접근 및 OAuth 로그인
 상단 퀵 액세스 버튼 클릭:
-- **Claude Code**: Claude AI 코드 모드 접속
-- **Gemini**: Google Gemini 접속
-- **Codex**: OpenAI Codex/Playground 접속
+- **Claude**: Claude.ai 접속 (OAuth 로그인 자동 저장)
+- **Gemini**: Google Gemini 접속 (Google 로그인 자동 저장)
+- **ChatGPT**: ChatGPT 접속 (OpenAI 로그인 자동 저장)
+- **GitHub**: GitHub 접속 (코드 보관 및 AI 모델 연동용)
 - **Localhost**: 로컬 개발 서버 접속 (포트 입력)
+
+**OAuth 자동 로그인:**
+- 한 번 로그인하면 WebView 쿠키/세션이 영구 저장됨
+- 앱 재시작 후에도 로그인 상태 유지
+- ChatGPT, GitHub, Gemini 등 자동 로그인
 
 ### 북마크 관리
 1. 원하는 페이지에서 **별 아이콘** 클릭하여 북마크 추가
@@ -131,6 +140,19 @@ Quick Access 영역의 **Kiwi 🦄** 버튼 또는 메뉴(⋮) > Open in Kiwi Br
 2. 익스텐션 필요시: Kiwi 버튼으로 즉시 전환
 3. 최상의 경험: 두 브라우저의 장점 활용
 
+### GitHub 통합
+**GitHub** 버튼으로 빠른 접속:
+- 코드 저장소 관리
+- 여러 AI 모델(Claude, ChatGPT, Gemini)에서 GitHub 코드 접근
+- OAuth 로그인 상태 자동 저장
+- 웹 IDE (github.dev) 접근 가능
+
+**활용 방법:**
+1. GitHub 버튼으로 로그인
+2. 저장소에 코드 커밋/푸시
+3. Claude/ChatGPT에서 GitHub 저장소 URL 공유
+4. AI가 코드 분석/수정/리뷰 수행
+
 ## 설정 커스터마이징
 
 ### Quick Access URL 변경
@@ -139,9 +161,10 @@ Quick Access 영역의 **Kiwi 🦄** 버튼 또는 메뉴(⋮) > Open in Kiwi Br
 3. Save 버튼으로 저장
 
 기본 URL:
-- Claude: `https://claude.ai/code`
-- Gemini: `https://gemini.google.com`
-- Codex: `https://platform.openai.com/playground`
+- Claude: `https://claude.ai/new`
+- Gemini: `https://gemini.google.com/app`
+- ChatGPT: `https://chatgpt.com`
+- GitHub: `https://github.com`
 - Localhost: `http://localhost:3000`
 
 ## 갤럭시 탭 최적화

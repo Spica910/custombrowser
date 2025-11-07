@@ -80,6 +80,12 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
+        // Enable persistent cookie storage for OAuth sessions
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(binding.webView, true)
+        }
+
         binding.webView.apply {
             settings.apply {
                 javaScriptEnabled = true
@@ -98,6 +104,9 @@ class MainActivity : AppCompatActivity() {
                 // Enable local storage for web apps
                 allowFileAccess = true
                 allowContentAccess = true
+
+                // Enable persistent data for OAuth login sessions
+                cacheMode = WebSettings.LOAD_DEFAULT
 
                 // Set user agent for desktop mode option
                 userAgentString = if (isDesktopMode) {
@@ -195,15 +204,19 @@ class MainActivity : AppCompatActivity() {
         val quickAccessUrls = bookmarkManager.getQuickAccessUrls()
 
         binding.btnClaudeCode.setOnClickListener {
-            loadUrl(quickAccessUrls["claude"] ?: "https://claude.ai/code")
+            loadUrl(quickAccessUrls["claude"] ?: "https://claude.ai/new")
         }
 
         binding.btnGemini.setOnClickListener {
-            loadUrl(quickAccessUrls["gemini"] ?: "https://gemini.google.com")
+            loadUrl(quickAccessUrls["gemini"] ?: "https://gemini.google.com/app")
         }
 
-        binding.btnCodex.setOnClickListener {
-            loadUrl(quickAccessUrls["codex"] ?: "https://platform.openai.com/playground")
+        binding.btnChatGPT.setOnClickListener {
+            loadUrl(quickAccessUrls["chatgpt"] ?: "https://chatgpt.com")
+        }
+
+        binding.btnGitHub.setOnClickListener {
+            loadUrl(quickAccessUrls["github"] ?: "https://github.com")
         }
 
         binding.btnLocalhost.setOnClickListener {

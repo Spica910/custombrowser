@@ -7,9 +7,10 @@
     <string name="loading">Loading…</string>
 
     <!-- Quick Access AI Services -->
-    <string name="claude_code">Claude Code</string>
+    <string name="claude_code">Claude</string>
     <string name="gemini">Gemini</string>
-    <string name="codex_cli">Codex CLI</string>
+    <string name="chatgpt">ChatGPT</string>
+    <string name="github">GitHub</string>
     <string name="localhost">Localhost</string>
 
     <!-- Menu items -->
@@ -39,4 +40,14 @@
     <string name="kiwi_install_prompt">Install Kiwi Browser for Chrome extension support?</string>
     <string name="install">Install</string>
     <string name="opened_in_kiwi">Opening in Kiwi Browser…</string>
+
+    <!-- OAuth & Login -->
+    <string name="login_status">Login Status</string>
+    <string name="logged_in">✓ Logged in</string>
+    <string name="not_logged_in">Not logged in</string>
+    <string name="login_to_services">Login to Services</string>
+    <string name="menu_login_status">Login Status</string>
+    <string name="chatgpt_login">ChatGPT Login</string>
+    <string name="github_login">GitHub Login</string>
+    <string name="gemini_login">Gemini Login</string>
 </resources>
