@@ -11,6 +11,7 @@ Android WebView 기반 커스텀 브라우저로, AI 서비스와 로컬 웹앱�
 - **갤럭시 탭 최적화**: 태블릿 화면에 최적화된 UI/UX
 
 ### 🚀 추가 기능
+- **Kiwi Browser 통합**: 크롬 익스텐션 필요시 원터치로 Kiwi Browser 실행
 - **다운로드 관리자**: 파일 다운로드 및 시스템 다운로드 폴더 접근
 - Desktop 모드 전환
 - 완전한 WebView 브라우저 기능 (뒤로/앞으로 가기)
@@ -117,6 +118,19 @@ custombrowser/
 - 메뉴(⋮) > Downloads에서 다운로드 폴더 열기
 - 다운로드 완료 시 알림으로 확인
 
+### Kiwi Browser 통합
+Quick Access 영역의 **Kiwi 🦄** 버튼 또는 메뉴(⋮) > Open in Kiwi Browser 선택:
+- **Kiwi 설치됨**: 현재 페이지가 Kiwi Browser에서 열림
+  - Kiwi에서 크롬 익스텐션 사용 가능
+  - Chrome Web Store 접근 가능
+- **Kiwi 미설치**: Play Store 설치 안내 다이얼로그 표시
+  - "Install" 버튼으로 직접 Play Store 이동
+
+**사용 시나리오:**
+1. 일반 브라우징: 가벼운 Custom Browser 사용
+2. 익스텐션 필요시: Kiwi 버튼으로 즉시 전환
+3. 최상의 경험: 두 브라우저의 장점 활용
+
 ## 설정 커스터마이징
 
 ### Quick Access URL 변경
@@ -167,31 +181,41 @@ custombrowser/
 - [ ] 탭 브라우징 지원
 - [ ] 히스토리 기능
 - [x] 다운로드 관리자 ✅
+- [x] Kiwi Browser 통합 (하이브리드 접근) ✅
 - [ ] 다크 모드 테마
 - [ ] 북마크 폴더/카테고리
-- [ ] 크롬 익스텐션 지원 (Kiwi Browser 통합)
 - [ ] 동기화 기능 (클라우드)
 
 ## 크롬 익스텐션 지원에 대하여
 
-현재 버전은 **Android WebView 기반**으로 네이티브 크롬 익스텐션을 지원하지 않습니다.
+### ✅ 현재 구현: 옵션 B (하이브리드 접근)
 
-크롬 익스텐션 지원을 원하신다면 다음 옵션들을 고려할 수 있습니다:
+이 브라우저는 **하이브리드 방식**을 채택하여 크롬 익스텐션을 지원합니다:
 
-### 옵션 A: Kiwi Browser 소스 포크
-- Kiwi Browser는 Chromium 기반으로 **네이티브 크롬 익스텐션** 지원
-- Chrome Web Store에서 직접 익스텐션 설치 가능
-- 단점: Chromium 빌드 복잡도 높음, 빌드 시간 매우 길음 (수 시간)
+**장점:**
+- ✅ **가벼움**: 기본 WebView로 빠른 브라우징
+- ✅ **익스텐션 지원**: 필요시 Kiwi Browser로 원터치 전환
+- ✅ **유연함**: 두 브라우저의 장점 활용
+- ✅ **쉬운 사용**: Quick Access에서 즉시 전환
 
-### 옵션 B: 하이브리드 접근 (추천)
-- 현재 WebView 브라우저 + Kiwi WebView 통합
-- 필요시 Kiwi 브라우저로 페이지 열기 기능
-- 경량 유지하면서 익스텐션 필요시에만 사용
+**작동 방식:**
+1. Custom Browser (WebView): 일반 브라우징, AI 서비스, 로컬 웹앱
+2. Kiwi Browser 전환: 익스텐션 필요시 Kiwi 버튼 클릭
+3. Kiwi Browser에서: 모든 크롬 익스텐션 사용 가능
 
-### 옵션 C: UserScript 인젝션
-- JavaScript 인젝션으로 유사 기능 구현
+### 대안 옵션들
+
+**옵션 A: Kiwi Browser 전체 포크** (미구현)
+- Chromium 소스 빌드 필요
+- 빌드 시간 매우 길음 (수 시간)
+- 복잡도 높음
+- 📝 필요시 별도 구현 가능
+
+**옵션 C: UserScript 인젝션** (미구현)
+- JavaScript 인젝션으로 유사 기능
 - Tampermonkey/Greasemonkey 스타일
-- 제한적이지만 가벼운 솔루션
+- 제한적이지만 가벼움
+- 📝 필요시 추가 가능
 
 ## 라이선스
 

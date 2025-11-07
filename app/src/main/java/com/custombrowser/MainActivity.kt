@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -26,6 +27,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var bookmarkManager: BookmarkManager
     private var isDesktopMode = false
+
+    companion object {
+        private const val KIWI_BROWSER_PACKAGE = "com.kiwibrowser.browser"
+        private const val KIWI_BROWSER_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=$KIWI_BROWSER_PACKAGE"
+    }
 
     // Permission launcher for notifications (API 33+)
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -203,6 +209,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnLocalhost.setOnClickListener {
             showLocalhostDialog()
         }
+
+        binding.btnKiwi.setOnClickListener {
+            val currentUrl = binding.webView.url ?: "https://www.google.com"
+            openInKiwiBrowser(currentUrl)
+        }
     }
 
     private fun loadUrl(input: String) {
@@ -284,16 +295,65 @@ class MainActivity : AppCompatActivity() {
 
     private fun openDownloads() {
         try {
-            startActivity(android.content.Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
+            startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS))
         } catch (e: Exception) {
             Toast.makeText(this, "Downloads app not found", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun isKiwiBrowserInstalled(): Boolean {
+        return try {
+            packageManager.getPackageInfo(KIWI_BROWSER_PACKAGE, 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun openInKiwiBrowser(url: String) {
+        if (isKiwiBrowserInstalled()) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    setPackage(KIWI_BROWSER_PACKAGE)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(intent)
+                Toast.makeText(this, R.string.opened_in_kiwi, Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to open Kiwi Browser", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        } else {
+            showKiwiInstallDialog()
+        }
+    }
+
+    private fun showKiwiInstallDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.kiwi_not_installed)
+            .setMessage(R.string.kiwi_install_prompt)
+            .setPositiveButton(R.string.install) { _, _ ->
+                openPlayStore(KIWI_BROWSER_PACKAGE)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun openPlayStore(packageName: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+        } catch (e: Exception) {
+            // If Play Store app is not installed, open in browser
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(KIWI_BROWSER_PLAY_STORE_URL)))
+        }
+    }
+
     private fun showMenu() {
+        val kiwiStatus = if (isKiwiBrowserInstalled()) "✓" else "Install"
         val options = arrayOf(
             getString(R.string.menu_bookmarks),
             getString(R.string.menu_downloads),
+            getString(R.string.menu_open_in_kiwi) + " ($kiwiStatus)",
             getString(R.string.menu_refresh),
             getString(R.string.menu_desktop_mode) + " (${if (isDesktopMode) "ON" else "OFF"})",
             getString(R.string.menu_settings)
@@ -305,9 +365,13 @@ class MainActivity : AppCompatActivity() {
                 when (which) {
                     0 -> showBookmarks()
                     1 -> openDownloads()
-                    2 -> binding.webView.reload()
-                    3 -> toggleDesktopMode()
-                    4 -> showSettings()
+                    2 -> {
+                        val currentUrl = binding.webView.url ?: "https://www.google.com"
+                        openInKiwiBrowser(currentUrl)
+                    }
+                    3 -> binding.webView.reload()
+                    4 -> toggleDesktopMode()
+                    5 -> showSettings()
                 }
             }
             .show()

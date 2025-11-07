@@ -32,4 +32,11 @@
     <string name="download_failed">Download failed</string>
     <string name="menu_downloads">Downloads</string>
     <string name="notification_permission_required">Notification permission required for download alerts</string>
+
+    <!-- Kiwi Browser Integration -->
+    <string name="menu_open_in_kiwi">Open in Kiwi Browser</string>
+    <string name="kiwi_not_installed">Kiwi Browser not installed</string>
+    <string name="kiwi_install_prompt">Install Kiwi Browser for Chrome extension support?</string>
+    <string name="install">Install</string>
+    <string name="opened_in_kiwi">Opening in Kiwi Browser…</string>
 </resources>
