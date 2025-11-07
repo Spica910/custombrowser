@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Custom Browser</string>
+    <string name="search_or_url_hint">Search or enter URL</string>
+    <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_removed">Bookmark removed</string>
+    <string name="loading">Loading…</string>
+
+    <!-- Quick Access AI Services -->
+    <string name="claude_code">Claude Code</string>
+    <string name="gemini">Gemini</string>
+    <string name="codex_cli">Codex CLI</string>
+    <string name="localhost">Localhost</string>
+
+    <!-- Menu items -->
+    <string name="menu_bookmarks">Bookmarks</string>
+    <string name="menu_history">History</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_add_bookmark">Add Bookmark</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_desktop_mode">Desktop Mode</string>
+
+    <!-- Bookmark dialog -->
+    <string name="bookmark_title">Bookmark Title</string>
+    <string name="bookmark_url">URL</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+</resources>
