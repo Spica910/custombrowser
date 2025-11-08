@@ -513,6 +513,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Screenshot button
+        binding.btnScreenshot.setOnClickListener {
+            takeScreenshot()
+        }
+
         // Terminal button
         binding.btnTerminal.setOnClickListener {
             toggleTerminal()
@@ -1584,6 +1589,15 @@ class MainActivity : AppCompatActivity() {
                     - setup-claude: Install Claude Code CLI
                     - node/npm/npx: Node.js commands
                     - claude: Run Claude Code
+                    - claude --image <path>: Send image to Claude
+
+                    📸 Screenshot Feature:
+                    1. Click camera button (📷) in toolbar
+                    2. Preview screenshot
+                    3. Click "Save & Send to Claude"
+                    4. Image path auto-inserted in terminal!
+                    5. Add your prompt and press Enter
+
                     - Any other command runs in Termux environment
 
                 """.trimIndent() + "\n")
@@ -2891,6 +2905,103 @@ Would you like to run the installation commands now?
                 }
             }
             false
+        }
+    }
+
+    private fun takeScreenshot() {
+        try {
+            // Capture the entire activity view
+            val rootView = window.decorView.rootView
+            rootView.isDrawingCacheEnabled = true
+            val bitmap = android.graphics.Bitmap.createBitmap(rootView.drawingCache)
+            rootView.isDrawingCacheEnabled = false
+
+            // Show preview dialog
+            showScreenshotPreview(bitmap)
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Screenshot failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showScreenshotPreview(bitmap: android.graphics.Bitmap) {
+        val imageView = android.widget.ImageView(this).apply {
+            setImageBitmap(bitmap)
+            adjustViewBounds = true
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+        }
+
+        val scrollView = android.widget.ScrollView(this).apply {
+            addView(imageView)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("📸 Screenshot Preview")
+            .setView(scrollView)
+            .setPositiveButton("Save & Send to Claude") { _, _ ->
+                saveScreenshotAndInsertPath(bitmap)
+            }
+            .setNeutralButton("Just Save") { _, _ ->
+                saveScreenshot(bitmap, insertPath = false)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun saveScreenshotAndInsertPath(bitmap: android.graphics.Bitmap) {
+        val path = saveScreenshot(bitmap, insertPath = true)
+        if (path != null) {
+            // Open terminal if not open
+            if (binding.terminalPanel.visibility == View.GONE) {
+                toggleTerminal()
+            }
+
+            // Insert Claude command with image path
+            val claudeCommand = "claude --image \"$path\" "
+            binding.terminalInput.setText(claudeCommand)
+            binding.terminalInput.setSelection(claudeCommand.length)
+            binding.terminalInput.requestFocus()
+
+            Toast.makeText(this, "Screenshot saved! Path inserted in terminal", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun saveScreenshot(bitmap: android.graphics.Bitmap, insertPath: Boolean): String? {
+        try {
+            // Create screenshots directory
+            val picturesDir = android.os.Environment.getExternalStoragePublicDirectory(
+                android.os.Environment.DIRECTORY_PICTURES
+            )
+            val screenshotsDir = java.io.File(picturesDir, "Screenshots")
+            if (!screenshotsDir.exists()) {
+                screenshotsDir.mkdirs()
+            }
+
+            // Generate filename with timestamp
+            val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
+                .format(java.util.Date())
+            val filename = "Screenshot_$timestamp.png"
+            val file = java.io.File(screenshotsDir, filename)
+
+            // Save bitmap to file
+            java.io.FileOutputStream(file).use { out ->
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+            }
+
+            // Notify media scanner
+            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            intent.data = Uri.fromFile(file)
+            sendBroadcast(intent)
+
+            if (!insertPath) {
+                Toast.makeText(this, "Screenshot saved to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            }
+
+            return file.absolutePath
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to save screenshot: ${e.message}", Toast.LENGTH_SHORT).show()
+            return null
         }
     }
 
