@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
     private var currentWorkingDir: java.io.File = java.io.File("/storage/emulated/0")
     private var selectedFolderPath: String? = null
 
+    // Terminal command history
+    private val commandHistory = mutableListOf<String>()
+    private var historyIndex = -1
+
     // Hotkeys
     private val maxHotkeys = 30
     private val defaultHotkeys = listOf(
@@ -118,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         setupWebView()
         setupToolbar()
         setupQuickAccessButtons()
+        setupSwipeGestures()
 
         // Handle intent URLs
         intent?.data?.toString()?.let { url ->
@@ -1353,11 +1358,15 @@ class MainActivity : AppCompatActivity() {
             val savedSize = prefs.getFloat("terminal_size", 0.4f)
             setTerminalSize(savedSize)
 
+            // Load command history
+            loadCommandHistory()
+
             // Show welcome message
             appendTerminalOutput("Custom Browser Terminal v1.0\n")
             appendTerminalOutput("Type 'help' for available commands\n")
             appendTerminalOutput("Working directory: ${currentWorkingDir.absolutePath}\n")
-            appendTerminalOutput("Type 'git-config' to setup git user info\n\n")
+            appendTerminalOutput("Type 'git-config' to setup git user info\n")
+            appendTerminalOutput("Use ↑↓ arrows for command history\n\n")
 
             setupTerminalListeners()
             loadHotkeys()
@@ -1435,6 +1444,24 @@ class MainActivity : AppCompatActivity() {
             binding.terminalOutput.text = ""
         }
 
+        // Copy/Paste buttons
+        binding.btnCopyTerminal.setOnClickListener {
+            val text = binding.terminalOutput.text.toString()
+            if (text.isNotEmpty()) {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Terminal Output", text)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, "Terminal output copied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnPasteTerminal.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clipboard.primaryClip?.getItemAt(0)?.text?.let { text ->
+                binding.terminalInput.append(text)
+            }
+        }
+
         // Terminal size buttons
         binding.btnTerminalSizeSmall.setOnClickListener {
             setTerminalSize(0.3f)
@@ -1448,11 +1475,35 @@ class MainActivity : AppCompatActivity() {
             setTerminalSize(0.7f)
         }
 
+        // Command history with arrow keys
+        binding.terminalInput.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        navigateHistory(-1)
+                        true
+                    }
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        navigateHistory(1)
+                        true
+                    }
+                    else -> false
+                }
+            } else {
+                false
+            }
+        }
+
         binding.terminalInput.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_GO ||
                 (event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER)) {
                 val command = binding.terminalInput.text.toString().trim()
                 if (command.isNotEmpty()) {
+                    // Add to history
+                    commandHistory.add(command)
+                    historyIndex = commandHistory.size
+                    saveCommandHistory()
+
                     executeCommand(command)
                     binding.terminalInput.text.clear()
                 }
@@ -1461,6 +1512,43 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
+    }
+
+    private fun navigateHistory(direction: Int) {
+        if (commandHistory.isEmpty()) return
+
+        historyIndex += direction
+        historyIndex = historyIndex.coerceIn(0, commandHistory.size)
+
+        if (historyIndex < commandHistory.size) {
+            binding.terminalInput.setText(commandHistory[historyIndex])
+            binding.terminalInput.setSelection(binding.terminalInput.text.length)
+        } else {
+            binding.terminalInput.text.clear()
+        }
+    }
+
+    private fun loadCommandHistory() {
+        val historyJson = prefs.getString("command_history", "[]") ?: "[]"
+        try {
+            val items = historyJson.trim('[', ']').split("\",\"")
+            items.forEach { item ->
+                val cleaned = item.trim('"', ' ')
+                if (cleaned.isNotEmpty()) {
+                    commandHistory.add(cleaned)
+                }
+            }
+            historyIndex = commandHistory.size
+        } catch (e: Exception) {
+            // Ignore parsing errors
+        }
+    }
+
+    private fun saveCommandHistory() {
+        // Keep only last 50 commands
+        val recentHistory = commandHistory.takeLast(50)
+        val historyJson = recentHistory.joinToString("\",\"", prefix = "[\"", postfix = "\"]")
+        prefs.edit().putString("command_history", historyJson).apply()
     }
 
     private fun setTerminalSize(heightPercent: Float) {
@@ -2767,6 +2855,43 @@ Would you like to run the installation commands now?
                 }
             }
         }.start()
+    }
+
+    private fun setupSwipeGestures() {
+        var startX = 0f
+        var startY = 0f
+        val swipeThreshold = 100
+        val swipeVelocityThreshold = 100
+
+        binding.webView.setOnTouchListener { view, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    val endX = event.x
+                    val endY = event.y
+                    val deltaX = endX - startX
+                    val deltaY = endY - startY
+
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > swipeThreshold) {
+                        if (deltaX > 0) {
+                            // Swipe right - go back
+                            if (binding.webView.canGoBack()) {
+                                binding.webView.goBack()
+                            }
+                        } else {
+                            // Swipe left - go forward
+                            if (binding.webView.canGoForward()) {
+                                binding.webView.goForward()
+                            }
+                        }
+                    }
+                }
+            }
+            false
+        }
     }
 
     override fun onBackPressed() {

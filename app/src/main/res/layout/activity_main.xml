@@ -293,6 +293,24 @@
                 android:textSize="10sp" />
 
             <ImageButton
+                android:id="@+id/btnCopyTerminal"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Copy"
+                android:src="@android:drawable/ic_menu_save"
+                android:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/btnPasteTerminal"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Paste"
+                android:src="@android:drawable/ic_menu_set_as"
+                android:tint="@color/white" />
+
+            <ImageButton
                 android:id="@+id/btnClearTerminal"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
