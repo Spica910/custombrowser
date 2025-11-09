@@ -1,18 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Base colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Custom colors for browser -->
-    <color name="toolbar_background">#FF2C3E50</color>
+    <!-- Light Theme Colors -->
+    <color name="light_primary">#FF2196F3</color>
+    <color name="light_primary_dark">#FF1976D2</color>
+    <color name="light_accent">#FF00BCD4</color>
+    <color name="light_background">#FFF5F5F5</color>
+    <color name="light_surface">#FFFFFFFF</color>
+    <color name="light_toolbar">#FF2196F3</color>
+    <color name="light_toolbar_text">#FFFFFFFF</color>
+    <color name="light_url_bar">#FFFFFFFF</color>
+    <color name="light_url_text">#FF212121</color>
+    <color name="light_text_primary">#FF212121</color>
+    <color name="light_text_secondary">#FF757575</color>
+    <color name="light_button_bg">#FF2196F3</color>
+    <color name="light_button_text">#FFFFFFFF</color>
+
+    <!-- Dark Theme Colors -->
+    <color name="dark_primary">#FF1E88E5</color>
+    <color name="dark_primary_dark">#FF1565C0</color>
+    <color name="dark_accent">#FF00BCD4</color>
+    <color name="dark_background">#FF121212</color>
+    <color name="dark_surface">#FF1E1E1E</color>
+    <color name="dark_toolbar">#FF1E1E1E</color>
+    <color name="dark_toolbar_text">#FFFFFFFF</color>
+    <color name="dark_url_bar">#FF2C2C2C</color>
+    <color name="dark_url_text">#FFFFFFFF</color>
+    <color name="dark_text_primary">#FFFFFFFF</color>
+    <color name="dark_text_secondary">#FFB0B0B0</color>
+    <color name="dark_button_bg">#FF1E88E5</color>
+    <color name="dark_button_text">#FFFFFFFF</color>
+
+    <!-- Legacy colors (for compatibility) -->
+    <color name="toolbar_background">#FF2196F3</color>
     <color name="toolbar_text">#FFFFFFFF</color>
-    <color name="quick_access_bg">#FF34495E</color>
+    <color name="quick_access_bg">#FF1976D2</color>
     <color name="quick_access_text">#FFFFFFFF</color>
-    <color name="url_bar_bg">#FFFAFAFA</color>
-    <color name="progress_bar">#FF3498DB</color>
+    <color name="url_bar_bg">#FFFFFFFF</color>
+    <color name="progress_bar">#FF00BCD4</color>
+
+    <!-- Terminal colors -->
+    <color name="terminal_bg">#FF1E1E1E</color>
+    <color name="terminal_text">#FF00FF00</color>
+    <color name="terminal_header">#FF2C2C2C</color>
+
+    <!-- Icon tints -->
+    <color name="ic_launcher_background">#FF2196F3</color>
 </resources>

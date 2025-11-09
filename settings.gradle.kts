@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CustomBrowser"
-include ':app'
+include(":app")

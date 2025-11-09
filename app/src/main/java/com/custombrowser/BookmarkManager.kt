@@ -36,6 +36,15 @@ class BookmarkManager(context: Context) {
         return getBookmarks().any { it.url == url }
     }
 
+    fun searchBookmarks(query: String): List<Bookmark> {
+        if (query.isBlank()) return getBookmarks()
+        val lowerQuery = query.lowercase()
+        return getBookmarks().filter {
+            it.title.lowercase().contains(lowerQuery) ||
+            it.url.lowercase().contains(lowerQuery)
+        }
+    }
+
     private fun saveBookmarks(bookmarks: List<Bookmark>) {
         val json = gson.toJson(bookmarks)
         prefs.edit().putString(KEY_BOOKMARKS, json).apply()
