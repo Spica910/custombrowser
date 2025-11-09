@@ -1676,19 +1676,83 @@ class MainActivity : AppCompatActivity() {
     private fun executeTermuxCommand(command: String, autoFixErrors: Boolean = true) {
         Thread {
             try {
-                // Build Termux environment
-                val termuxPath = "/data/data/com.termux/files/usr/bin"
+                // Safely get first word of command
+                val commandParts = command.trim().split(" ", limit = 2)
+                if (commandParts.isEmpty() || commandParts[0].isEmpty()) {
+                    runOnUiThread {
+                        appendTerminalOutput("❌ Empty command\n")
+                    }
+                    return@Thread
+                }
+                val firstWord = commandParts[0]
+
+                // Check if this is a Termux-specific command
+                val termuxCommands = listOf("pkg", "apt", "npm", "npx", "node", "claude", "pip", "python", "ruby", "perl", "git")
+                val isTermuxCommand = termuxCommands.contains(firstWord)
+
+                // Check if Termux is installed using PackageManager
+                val isTermuxInstalled = try {
+                    packageManager.getPackageInfo("com.termux", 0)
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+
+                if (isTermuxCommand && !isTermuxInstalled) {
+                    runOnUiThread {
+                        appendTerminalOutput("❌ Termux not installed!\n")
+                        appendTerminalOutput("Install Termux from F-Droid or GitHub to use: $command\n")
+                        appendTerminalOutput("Download: https://f-droid.org/en/packages/com.termux/\n")
+                    }
+                    return@Thread
+                }
+
+                // For Termux-specific commands, use am to execute in Termux
+                if (isTermuxCommand && isTermuxInstalled) {
+                    runOnUiThread {
+                        appendTerminalOutput("🔄 Executing in Termux...\n")
+                        appendTerminalOutput("Check Termux window for output\n")
+                    }
+
+                    // Create a script file in shared storage
+                    val scriptFile = java.io.File(currentWorkingDir, ".termux_cmd.sh")
+                    try {
+                        scriptFile.writeText("#!/data/data/com.termux/files/usr/bin/bash\ncd \"${currentWorkingDir.absolutePath}\"\n$command\n")
+                    } catch (e: Exception) {
+                        runOnUiThread {
+                            appendTerminalOutput("❌ Failed to create script: ${e.message}\n")
+                        }
+                        return@Thread
+                    }
+
+                    // Execute via Termux using am broadcast
+                    val amCommand = arrayOf(
+                        "am", "broadcast",
+                        "-a", "com.termux.RUN_COMMAND",
+                        "-n", "com.termux/com.termux.app.RunCommandReceiver",
+                        "--es", "com.termux.RUN_COMMAND_PATH", scriptFile.absolutePath,
+                        "--es", "com.termux.RUN_COMMAND_WORKDIR", currentWorkingDir.absolutePath,
+                        "--ez", "com.termux.RUN_COMMAND_BACKGROUND", "false"
+                    )
+
+                    val amProcess = Runtime.getRuntime().exec(amCommand)
+                    amProcess.waitFor()
+
+                    runOnUiThread {
+                        appendTerminalOutput("✅ Command sent to Termux\n")
+                    }
+                    return@Thread
+                }
+
+                // Regular shell commands - use /system/bin/sh
                 val env = arrayOf(
-                    "PATH=$termuxPath:/system/bin:/system/xbin",
-                    "HOME=/data/data/com.termux/files/home",
-                    "TMPDIR=/data/data/com.termux/files/usr/tmp",
-                    "PREFIX=/data/data/com.termux/files/usr",
+                    "PATH=/system/bin:/system/xbin",
                     "ANDROID_DATA=/data",
                     "ANDROID_ROOT=/system"
                 )
 
                 val process = Runtime.getRuntime().exec(
-                    command,
+                    arrayOf("/system/bin/sh", "-c", command),
                     env,
                     currentWorkingDir
                 )
@@ -2118,24 +2182,6 @@ If multiple files need to be fixed, provide each one separately with the same fo
     private fun loadFolderTree() {
         binding.folderTreeContainer.removeAllViews()
 
-        // Add "Navigate to Folder" button
-        val navigateButton = com.google.android.material.button.MaterialButton(this).apply {
-            text = "📂 Navigate to Folder"
-            textSize = 10f
-            setTextColor(android.graphics.Color.WHITE)
-            setBackgroundColor(android.graphics.Color.parseColor("#FF3498DB"))
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                bottomMargin = 8
-            }
-            setOnClickListener {
-                showFolderNavigationDialog()
-            }
-        }
-        binding.folderTreeContainer.addView(navigateButton)
-
         // Add "Quick Jump" button
         val quickJumpButton = com.google.android.material.button.MaterialButton(this).apply {
             text = "⚡ Quick Jump"
@@ -2225,8 +2271,9 @@ If multiple files need to be fixed, provide each one separately with the same fo
 
             setOnClickListener {
                 if (isDirectory) {
-                    // Navigate into folder immediately
-                    executeChangeDirectory(path)
+                    // Navigate into folder immediately and refresh tree
+                    currentWorkingDir = java.io.File(path)
+                    appendTerminalOutput("cd ${currentWorkingDir.absolutePath}\n")
                     loadFolderTree()
                 } else if (name.endsWith(".apk")) {
                     // Install APK
@@ -2831,41 +2878,34 @@ Would you like to run the installation commands now?
     private fun checkAndRunClaude(command: String) {
         Thread {
             try {
-                // Check if node is installed
-                val nodeCheck = Runtime.getRuntime().exec("which node")
-                nodeCheck.waitFor()
+                // Check if Termux is installed
+                val isTermuxInstalled = try {
+                    packageManager.getPackageInfo("com.termux", 0)
+                    true
+                } catch (e: Exception) {
+                    false
+                }
 
-                if (nodeCheck.exitValue() != 0) {
+                if (!isTermuxInstalled) {
                     runOnUiThread {
-                        appendTerminalOutput("❌ Node.js not found!\n")
-                        appendTerminalOutput("Run 'setup-claude' to install Node.js and Claude Code\n")
+                        appendTerminalOutput("❌ Termux not installed!\n")
+                        appendTerminalOutput("Claude Code requires Termux to run.\n")
+                        appendTerminalOutput("Download: https://f-droid.org/en/packages/com.termux/\n")
                     }
                     return@Thread
                 }
 
-                // Check if claude is installed
-                val claudeCheck = Runtime.getRuntime().exec("which claude")
-                claudeCheck.waitFor()
-
-                if (claudeCheck.exitValue() != 0) {
-                    runOnUiThread {
-                        appendTerminalOutput("❌ Claude Code not found!\n")
-                        appendTerminalOutput("Run: npm install -g @anthropic-ai/claude-code\n")
-                        appendTerminalOutput("Or run 'setup-claude' for automatic installation\n")
-                    }
-                    return@Thread
-                }
-
-                // Run claude command
+                // Just run the command - Termux will handle it
                 runOnUiThread {
-                    appendTerminalOutput("🤖 Running Claude Code...\n")
+                    appendTerminalOutput("🤖 Running Claude Code in Termux...\n")
+                    appendTerminalOutput("Note: Output will appear in Termux window\n")
                     executeTermuxCommand(command)
                 }
 
             } catch (e: Exception) {
                 runOnUiThread {
-                    appendTerminalOutput("Error checking Claude Code: ${e.message}\n")
-                    appendTerminalOutput("Run 'setup-claude' to install\n")
+                    appendTerminalOutput("Error: ${e.message}\n")
+                    appendTerminalOutput("Run 'setup-claude' to install Node.js and Claude Code\n")
                 }
             }
         }.start()
